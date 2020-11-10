@@ -12,9 +12,7 @@ Foi criando 4 classes, ou seja, esta isolanda cada operação de interação com
  - select
  - update
  - delete
- 
- #### Insert
-    O todo podereso Insert : Inicialmente ele está abilitado apenas conneções via PDO
+
 
 
 
