@@ -9,8 +9,13 @@ Pensando que o fluxo de fatos ocorrem a partir de uma solicitação de consulta 
 
 Foi criando 4 classes, ou seja, esta isolanda cada operação de interação com o banco de dados, para tornar viável o ajuste de futuras implemetações, correção de erros ou ajustes
  - Insert
+   Classe responsavél unicamente pelas operações de Inserção no banco de dados, e a tratativa para evitar o SQL Injection
+   
  - Select
+   Classe responsável unicamente, por executar as consultas, sendo elas com associações, buscas dinamicas por aproximações e trataticas de SQL Injection
+ 
  - Update
+   
  - Delete
 
 
