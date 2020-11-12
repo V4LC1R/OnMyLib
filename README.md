@@ -1,5 +1,5 @@
 # OnMyLib
--Uma aplicação PHP para estudos
+-Uma aplicação PHP para estudos baseado em uma connecção PDO
 
 ## Finalidade
 Esta projeto individual tem como base facilitar o estudo, de construção de libs independentes
