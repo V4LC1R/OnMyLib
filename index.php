@@ -1,13 +1,10 @@
 <?php
 define('PATH_PRIVATE',dirname(__FILE__) );
 
-include PATH_PRIVATE ."/SQL/insert.php";
-include PATH_PRIVATE ."/SQL/select.php";
-include PATH_PRIVATE ."/SQL/update.php";
-include PATH_PRIVATE ."/SQL/delect.php";
+include_once PATH_PRIVATE ."/SQL/QuerryBuilder.php";
 
-class Model {
-    protected $settings;
+class Model extends DataBase{
+    private $settings;
     private $coluns_model;
     private $coluns_types;
     private $foringKey;
@@ -22,10 +19,6 @@ class Model {
         $this->setClassName($name);
     }
 
-    private function setClassName($name){
-        $this->class_name = strtolower($name);
-    }
-    
     //guarda as definições vindas
     private function init( array $settings){
 
@@ -44,6 +37,10 @@ class Model {
     
             //pegos os campos obrigatórios
             $this->setAllowNull($settings["coluns"]);
+    }
+
+    private function setClassName($name){
+        $this->class_name = strtolower($name);
     }
 
     private function setColuns(array $data){
@@ -78,58 +75,62 @@ class Model {
         }
     }
 
-    private function onRequest(){
-        //verifica os campos passados na req
-        //$this->verifyColuns();
+    private function setGlobalDate(array $data){
+        if(!$this->verifyColuns($data))
+            echo "Incongruencia";
+       // if(!$this->verifyType($data))
+         //   echo "Incongruencia";
 
-        //verifica os typos dos campos
-        //$this->verifyTypes();
+        return $this->data=$data;
+    }
 
-        //verifica se todos os campos obrigatórios foram pegos
-        //$this->verifyAllowNull();
-
-        //verifica se as chaves foram passadas
-        //$this->verifyForings();
-
-        //etapa anti SQL Injection
-       
+    private function getGlobalDate(){
         return $this->data;
     }
 
-    private function verifyColuns(){
-
+    private function getClassName(){
+        return ''.$this->class_name.'';
     }
 
-    private function verifyTypes(){
 
+    private function verifyColuns(array $data){
+        $requestKeys = array_keys($data);
+        $b =0;
+        $c =true;
+            while($b<count($requestKeys)){
+                $compare = $requestKeys[$b];
+                if(!in_array($compare,$this->coluns_model))
+                    $c = false; break ;
+                $b++;
+            }
+        return $c;
     }
 
-    private function verifyAllowNull(){
-
-    }
-
-    private function verifyForings(){
-        
-    }
-
-    private function antiInjection(){
+    private function verifyType(array $data){
 
     }
 
     public function create( array $values){
-        //$this->data = $values;
+        //invoco  A classe de inserção 
+        $this->setTypesValues($this->coluns_types);
 
-        $this->onRequest();
+        //set os valores da classe, com as devidas verificações
+        $this->setGlobalDate($values);
 
-        //$reValues = settingNULL($values)
+        //inserio o valor e coluna
+        $this->settingsColunsValues($this->getGlobalDate());
 
-        $insert = new Insert($this->class_name,$this->coluns_types);
+        //iniro  a tabela
+        $this->setTableName($this->getClassName());
 
+        //chamo o metodo final
+        $this->Insert();
 
-        $insert->settingsAll($values);
+    }
 
-        $insert->GoInsertPDO();
-
+    public function findAll(){
+        $this->setTableName($this->getClassName());
+        $this->Select();
     }
     
 }

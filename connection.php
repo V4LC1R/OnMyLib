@@ -11,7 +11,14 @@ class Connect {
 
     private $dbh;
 
-    protected function __construct(array $Setting){
+    public function __construct(array $Setting = [
+        "type"=>'mysql',
+        "host"=>'localhost',
+        "port"=>'3306',
+        "name"=>'catalogo',
+        "user"=>'root',
+        "password"=>''
+      ]){
         $this->setType($Setting["type"]);
         $this->setHost($Setting["host"]);
         $this->setPort($Setting["port"]);
@@ -60,11 +67,11 @@ class Connect {
         return $this->dbPassord;
     }
     //
-    protected function byPDO(){
+    public function byPDO(){
        return new PDO(''.$this->getType().':host='.$this->getHost().';port='.$this->getPort().';dbname='.$this->getName().';',''.$this->getUser().'',''.$this->getPassword().'', array(PDO:: ATTR_PERSISTENT =>false));
     }
 
-    protected function getConnection($connection){
+    public function getConnection($connection){
         return  $this->dbh =$connection;
     }
 

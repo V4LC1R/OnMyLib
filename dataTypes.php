@@ -1,36 +1,43 @@
 <?php
 
-class DataTypes {
+class DataTypes{
 
     private $value;
+  
+  
+  
+    protected function setValue($value){
 
-    public function __construct($value){
-
-        $this->setValue($value);
-    }
-
-    private function setValue($value){
+        
         return $this->value = $value;
     }
-
-    public function STRING(){
-        return ''.$this->value.'';
-    }
-
-    public function NUMBER(){
-        if(is_int($this->value))
-            return $this->value;
-        else echo 'erro porra';
-    }
-
-    public function DECIMAL(number $c=10,number $v=2 ){
+  
+    protected function STRING(){
         
+        if(!is_string($this->value))
+            return var_dump("Err:: This not a STRING");
+        return  ''.$this->value.'';
     }
-
-    public function TEXT(){
-
+  
+    protected function NUMBER(){
+       
+        if(!is_int($this->value))
+            return var_dump("ERR::This not a Number");
+        return $this->value;
     }
-
-}
+  
+    protected function DECIMAL( ){
+       
+        if(!is_float($this->value))
+            return var_dump("ERR::This not a DECIMAL");
+        return $this->value;
+    }
+  
+    protected function TEXT(){
+  
+    }
+  
+  }
+  
 
 ?>
