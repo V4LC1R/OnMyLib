@@ -130,7 +130,9 @@ class Model extends DataBase{
 
     public function findAll(){
         $this->setTableName($this->getClassName());
-        $this->Select();
+        $b= $this->Select();
+
+        return $b;
     }
     
 }

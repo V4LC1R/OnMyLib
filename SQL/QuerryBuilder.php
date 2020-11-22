@@ -145,29 +145,16 @@ class DataBase extends DataTypes{
     $this->connection= $conn->getConnection($conn->byPDO());
     $this->setColunsToSelect();
     $this->setTableToSelect();
-   // $this->setWhereClosure();
-    //$this->setOrderBy();
-    //this->setGrouBy();
-  // $a= $this->connection->prepare($this->sql);
-    //$a->execute();
-   // $b->fetchAll();
-    //var_dump($this->sql);
+   //$this->setWhereClosure();
+    
     $a=$this->setBinds();
     $a->execute();
-    $data =array();
-    while($row = $a->fetch(PDO::FETCH_ASSOC)){
-      foreach($row as $key => $val){
-          if (is_null($val)) $val = '';
-          $d["$key"] = $val;
-      }
-          array_push($data, $d);
-    }
-    echo json_encode($data);
-  }
 
+   // var_dump($a);
 
+    return $a;
 
   }
-
+}
 
 ?>
