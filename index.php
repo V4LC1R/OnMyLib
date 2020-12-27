@@ -128,12 +128,35 @@ class Model extends DataBase{
 
     }
 
-    public function findAll(){
+    public function findAll($closure = []){
         $this->setTableName($this->getClassName());
-        $b= $this->Select();
+        $this->setOnlyColuns($this->coluns_model);
+        $this->setTypesValues($this->coluns_types);
+        $b= $this->Select($closure);
 
         return $b;
     }
+
+    public function findAllDistinct($closure=[]){
+
+    }
+
+    public function FindOne($closure=[]){
+        
+    }
+    public function Queue($func,$value){
+        const Actions = [ "Create","Update","Delete"];
+    }
+
+    public function Hook(){
+        function beforeCreate(){};
+        function afterCreate(){};
+        function beforeUpdate(){};
+        function afterUpdate(){};
+        function beforeDelete(){};
+        function afterDelete(){};
+
+    } 
     
 }
 
