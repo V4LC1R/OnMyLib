@@ -231,7 +231,7 @@ class DataBase extends DataTypes{
 
   // vai percorrer o array inteiro em todas as dimensões, para procurar o seu operador
   private function compareOr(array $data){
-
+    $baseOperators = ["Maior","Menor","MaI","MeI","Diff","pLike","pLikeq","Likeq"];
 
     $lv1 ;
     $lv2;
@@ -255,8 +255,25 @@ class DataBase extends DataTypes{
 
            //verifica se é um array
             if(is_array($value)){
-
+              //percorro
               foreach ($value as $chave => $valor) {
+                //pegar as definições do Or daquele campo
+                if(in_array($chave,$this->coluns_toSQL)){
+                  //quando tem um operador (>,>=,<=,<>) ou mais definições
+                  if(is_array($valor)){
+                    //quando for exc um Or entre valores de um mesmo campo
+                    foreach($valor as $defines=> $last){
+                      //verifica se está sendo inferido um operador logico
+                      if(in_array($defines,$baseOperators)){
+
+                      }else{
+
+                      }
+                    }
+                  }
+
+                }
+                  
                 
               }
 
@@ -283,27 +300,27 @@ class DataBase extends DataTypes{
 
   }
 
-  private function compareGreter($campos,$closure = "where"){
-      // setar o campo para n repetir
-
-      // retornar 
-  }
 
   private function callOperator($data){
 
     
   }
  
+  private function compareMaior($campos,$closure = "where"){
+    // setar o campo para n repetir
 
-  private function compareLess($campos,$closure = "where"){
+    // retornar 
+  }
+
+  private function compareMenor($campos,$closure = "where"){
     
   }
 
-  private function compareGreaterEqual($campos,$closure = "where"){
+  private function compareMaI($campos,$closure = "where"){
     
   }
 
-  private function compareLessEqual($campos,$closure = "where"){
+  private function compareMeI($campos,$closure = "where"){
 
   }
 
