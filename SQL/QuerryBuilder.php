@@ -126,11 +126,13 @@ class DataBase extends DataTypes{
     return $this->sql.="FROM {$this->getTableName()}";
   }
 
+  
+
   private function WhereClosure(){
    $t = [];
     foreach ($this->whereQuerry as $key => $value){
       if(is_array($value))
-        $t = $this->buildOperation($value);
+       // $t = $this->buildOperation($value);
       $t[]= "`{$key}`=:{$key}";
       $typing = $this->types["$key"];
       $this->binds[":{$key}"]=[$typing,$value];
@@ -204,7 +206,7 @@ class DataBase extends DataTypes{
       $t[]= "`{$campo}`{$opSignal}:{$campo}";
 
       //aqui ele passa a função de tipagem
-      $typing = $this->$types["$campo"];
+      $typing = $this->types["$campo"];
 
       //aqui ele armazena os campos que foram bindados,junto com as suas funções de tipagem
       return $this->binds[":{$campo}"]=[$typing,$absoluteValue];
@@ -227,15 +229,18 @@ class DataBase extends DataTypes{
 
   private function opHaving(){}
 
+  
   //private function opCount(){}
 
   // vai percorrer o array inteiro em todas as dimensões, para procurar o seu operador
   private function compareOr(array $data){
     $baseOperators = ["Maior","Menor","MaI","MeI","Diff","pLike","pLikeq","Likeq"];
 
-    $lv1 ;
-    $lv2;
-    $lv3;
+    
+
+    $lv1 =[];
+    $lv2 =[];
+    $lv3 =[];
       foreach ($data as $campo => $compare) {
         //não é array? sim== vaza não == continua
         if(!is_array($compare))
@@ -267,7 +272,9 @@ class DataBase extends DataTypes{
                       if(in_array($defines,$baseOperators)){
 
                       }else{
-
+                        $lv1[] = "`{$key}=:{$key}B`";
+                        $typing = $this->types["$key"];
+                        return $this->binds[":{$key}B"]=[$typing,$value];
                       }
                     }
                   }
@@ -289,7 +296,7 @@ class DataBase extends DataTypes{
             //building a querry or
             $lv1[] = "`{$key}=:{$key}A`";
             $typing = $this->types["$key"];
-            $this->binds[":{$key}A"]=[$typing,$value];
+            return $this->binds[":{$key}A"]=[$typing,$value];
           }
         }
 

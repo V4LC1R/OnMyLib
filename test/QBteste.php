@@ -1,20 +1,7 @@
 <?php
-    include '../SQL/QuerryBuilder.php';
+    include '../SQL/QuerryBuilderV2.php';
 
-class QBteste extends QuerryBuilder{
-    
-    public function tInsert(){
+$teste = new DaviORM();
 
-
-        var_dump($this->getSql());
-    }
-
-    public function tSelect(){
-        var_dump($this->getSql());
-    }
-}
-
-$a= new QBteste();
-
-$a->tInsert();
+$teste->Select(distinc:true);
 ?>

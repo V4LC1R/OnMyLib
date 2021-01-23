@@ -6,7 +6,7 @@ class DataTypes{
   
   
   
-    protected function setValue($value){
+    public function setValue($value){
 
         
         return $this->value = $value;

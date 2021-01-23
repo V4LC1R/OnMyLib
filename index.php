@@ -138,14 +138,17 @@ class Model extends DataBase{
     }
 
     public function findAllDistinct($closure=[]){
-
+        $this->findAll();
     }
 
     public function FindOne($closure=[]){
         
     }
+    /**
+     * @param function $func
+     */
     public function Queue($func,$value){
-        const Actions = [ "Create","Update","Delete"];
+       $Actions = [ "Create","Update","Delete"];
     }
 
     public function Hook(){
