@@ -190,6 +190,9 @@ class DaviORM{
 
                 return $set["campo"]." LIKE ':".$stringDiff."%'";
             }/*"%:$campo{$dif}%"*/,
+            "Or"=>function($set){
+
+            },
             "INN"=> function($set){
 
             },
@@ -260,6 +263,79 @@ class DaviORM{
         return $this;
     }
 
+    private function buildJoin(){
+        $aux = in_array("aux",$this->clausures)? $this->clausures["aux"] : '';
+
+        if(!in_array("JOIN",$aux))
+            return ;
+
+        $joins ='';
+        
+    }
+
+    private function buildWhere(){
+        $aux = in_array("aux",$this->clausures)? $this->clausures["aux"] : ''; 
+        //<JOIN> --> WHERE 
+        if(!in_array("WHERE",$aux))
+            return ;
+
+        $wheres =[];
+        foreach ($aux["WHERE"] as $campo1 => $valor1) {
+            // pegar campos com operadores logicos diff de "=" e Clausulas "Or"
+            if(is_array($valor1)){
+
+                //bloco de execução de "Or"s ( lv1 , lv2, lv1 + , lv2 +)
+                if($campo1=="Or"){
+                    foreach ($valor1 as $campo2 => $valor2) {
+                        //caso tenha um operador 
+                        if(!is_array($valor2)){
+
+                        }
+                    }
+                }
+
+                // Bloco de execução de "Or"s basicos
+                if(in_Array("Or",$valor1)){
+                    $or1 = $valor1["Or"];
+                        
+                    $basic3 = [];
+                    foreach ($or1 as $opr => $val) {
+                            
+                        //verifico para ver se tem um operador nomeado
+                        if(in_array($opr,["Diff","Maior","MaI","Menor","MeI","LIKE","Btw","NTI","pLIKE","LIKEq","pLIKEq"])){
+
+                            //armazeno temporáriamente as strings geradas, para fazer um implode
+                            return $basic3[] = $this->Op($opr,["coluna"=>$campo1,"value"=>$val]);  
+                        }
+
+                        //armazeno temporáriamente as strings geradas, para fazer um implode
+                        return $basic3[] = $this->Op(settings:["coluna"=>$campo1,"value"=>$val]);
+                    }
+
+                        // construo um string  e armazeno nos wheres
+                        return $wheres[] ="(".implode(" OR ",$basic3).")";
+                }
+
+                // para o psicopata não colocar 2 operadores
+                if(count($valor1)>1){
+                    throw new \Exception("Err when definig the Where closure, more than one logical operator per field");
+                    break;
+                }
+
+                //pego a string gerada pelo o operador
+                $basic2 = $this->Op(array_key_first($valor1),["coluna"=>$campo1,"value"=>$valor1]);
+                return  $wheres[]=$basic2;
+            }
+
+                $simple = $this->Op(settings:["coluna"=>$campo1,"value"=>$valor1]);
+
+                return $wheres[]=$simple;
+            }
+
+        return " WHERE ".implode(" AND ", $wheres);
+    }
+
+    
 # ----- execute and build querry
     /**
      * @return Array vai retornar os dados da busca
@@ -272,6 +348,8 @@ class DaviORM{
             throw new \Exception("Entity not define, plase use setEntity function");
         $aux = in_array("aux",$this->clausures)? $this->clausures["aux"] : '';
 
+
+        
         //constroi a o join dentro da querry
         if(in_array("JOIN",$aux)){
             $joins ='';
@@ -294,68 +372,7 @@ class DaviORM{
         }
 
         //<JOIN> --> WHERE 
-        if(in_array("WHERE",$aux)){
-            $finalSql[]="WHERE ";
-            $wheres =[];
-            foreach ($aux["WHERE"] as $campo1 => $valor1) {
-                // pegar campos com operadores logicos diff de "=" e Clausulas "Or"
-                if(is_array($valor1)){
-
-                    //bloco de execução de "Or"s ( lv1 , lv2, lv1 + , lv2 +)
-                    if($campo1=="Or"){
-                        foreach ($valor1 as $campo2 => $valor2) {
-                            //caso tenha um operador 
-                            if(!is_array($valor2)){
-
-                            }
-                        }
-                    }
-
-                    // Bloco de execução de "Or"s basicos
-                    if(in_Array("Or",$valor1)){
-                        $or1 = $valor1["Or"];
-                        
-                        if(count($or1)>2){
-                            //para não ter mais de 2 valores passados
-                            throw new \Exception("Err when definig the OR closure, more than two value per field");
-                            break;
-                        }
-                        $basic3 = [];
-                        foreach ($or1 as $opr => $val) {
-                            
-                            //verifico para ver se tem um operador nomeado
-                            if(in_array($opr,["Diff","Maior","MaI","Menor","MeI","LIKE","Btw","NTI","pLIKE","LIKEq","pLIKEq"])){
-
-                               //armazeno temporáriamente as strings geradas, para fazer um implode
-                               return $basic3[] = $this->Op($opr,["coluna"=>$campo1,"value"=>$val]);  
-                            }
-
-                            //armazeno temporáriamente as strings geradas, para fazer um implode
-                            return $basic3[] = $this->Op(settings:["coluna"=>$campo1,"value"=>$val]);
-                        }
-                        // construo um string  e armazeno nos wheres
-                        return $wheres[] ="(".implode(" OR ",$basic3).")";
-                    }
-
-                    // para o psicopata não colocar 2 operadores
-                    if(count($valor1)>1){
-                        throw new \Exception("Err when definig the Where closure, more than one logical operator per field");
-                        break;
-                    }
-
-                    //pego a string gerada pelo o operador
-                    $basic2 = $this->Op(array_key_first($valor1),["coluna"=>$campo1,"value"=>$valor1]);
-                    return  $wheres[]=$basic2;
-
-                }
-
-                $simple = $this->Op(settings:["coluna"=>$campo1,"value"=>$valor1]);
-
-                return $wheres[]=$simple;
-
-            }
-
-        }
+        $finalSql[] = $this->buildWhere();
 
         if(in_array("ORDERBY",$aux)){
 
