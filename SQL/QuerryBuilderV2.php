@@ -280,30 +280,76 @@ class DaviORM{
             return ;
 
         $wheres =[];
+        //vou varrer o array para pegar as específicações
         foreach ($aux["WHERE"] as $campo1 => $valor1) {
-            // pegar campos com operadores logicos diff de "=" e Clausulas "Or"
-            if(is_array($valor1)){
-
-                //bloco de execução de "Or"s ( lv1 , lv2, lv1 + , lv2 +)
-                if($campo1=="Or"){
-                    foreach ($valor1 as $campo2 => $valor2) {
-                        //caso tenha um operador 
-                        if(!is_array($valor2)){
-
+            //verificação de OR  de simples
+            if($campo1=="Or"){
+                //array de ORs para implode no final
+                $orLv1 =[];
+                //como é um or simples ele automaticamente é um array
+                foreach ($valor1 as $campo2 => $valor2) {
+                    //verifico se a chave é uma string, pois se for é um campo/coluna
+                    if(is_string($campo2)){
+                        //verifico se não foi passado um operador nas definições de campo/coluna
+                        if(in_array($campo2,["Diff","Maior","MaI","Menor","MeI","LIKE","Btw","NTI","pLIKE","LIKEq","pLIKEq"])){
+                            throw new \Exception("Operator localized, but that is not your use");
+                            break;
                         }
+                          
+                        //verifico se é um array para aplicar operadores e colocar dentro de parenteses, para q seja mais de um valor de base comparativa
+                        if(is_array($valor2)){
+                            //array para implode no final do foreach
+                            $tempP = [];
+                            //percorrendo as definições
+                            foreach ($valor2 as $campo21 => $valor21) {
+                                //verifico se o campo passado pertence ao conjunto de operadores logicos
+                                if(in_array($campo21,["Diff","Maior","MaI","Menor","MeI","LIKE","Btw","NTI","pLIKE","LIKEq","pLIKEq"])){
+                                    //crio a string que será armazenada junto com operador e bind automatico
+                                    return $tempP[] = $this->Op($campo21,["coluna"=>$campo2,"value"=>$valor21]);
+                                }
+                                 //crio a string que será armazenada junto com operador e bind automatico
+                                return $tempP[] = $this->Op(settings:["coluna"=>$campo2,"value"=>$valor21]);
+                            }
+                            return $orLv1[] = "(".implode(" OR ",$tempP).")";
+                        }
+                         //crio a string que será armazenada junto com operador e bind automatico e coloco dentro do array para implode
+                        return $orLv1[]= $this->Op(settings:["coluna"=>$campo2,"value"=>$valor2]);
+                    }
+
+                  //como não é uma string a chave, ela é um array
+                    foreach ($valor2 as $campo22 => $valor22) {
+                        //nesta etapa obrigatóriamente precisa ter um campo específicado
+                       if(!is_string($campo22)){
+                        throw new \Exception("field not define, plase declare o some");
+                        break;
+                       }
+                       // verifico se é um array, para aplicar o operador
+                       if(is_array($valor22)){
+                           //aplicar a validação para ter apenas 1 valor
+                            if(count($valor22)>1)
+                                throw new \Exception("Limit Find");
+                            //pego a primeira key e armazeno
+                            $key = array_key_first($valor22);
+
+                            //crio a string que será armazenada junto com operador e bind automatico
+                            return $orLv1[] = $this->Op($key,["coluna"=>$campo22,"value"=>$valor22[$key]]);
+                       }
+                       //crio a string que será armazenada junto com operador e bind automatico
+                       return $orLv1[]= $this->Op(settings:["coluna"=>$campo22,"value"=>$valor22]);
                     }
                 }
 
-                // Bloco de execução de "Or"s basicos
-                if(in_Array("Or",$valor1)){
-                    $or1 = $valor1["Or"];
+                //constro a string final implodando o array
+                return $wheres[]= "(".implode(' OR ', $orLv1).")";
+            }
+
+            if($valor1["Or"]){
+                $or0 = $valor1["Or"];
                         
                     $basic3 = [];
-                    foreach ($or1 as $opr => $val) {
-                            
+                    foreach ($or0 as $opr => $val) {                            
                         //verifico para ver se tem um operador nomeado
                         if(in_array($opr,["Diff","Maior","MaI","Menor","MeI","LIKE","Btw","NTI","pLIKE","LIKEq","pLIKEq"])){
-
                             //armazeno temporáriamente as strings geradas, para fazer um implode
                             return $basic3[] = $this->Op($opr,["coluna"=>$campo1,"value"=>$val]);  
                         }
@@ -311,11 +357,11 @@ class DaviORM{
                         //armazeno temporáriamente as strings geradas, para fazer um implode
                         return $basic3[] = $this->Op(settings:["coluna"=>$campo1,"value"=>$val]);
                     }
-
                         // construo um string  e armazeno nos wheres
                         return $wheres[] ="(".implode(" OR ",$basic3).")";
-                }
-
+            }
+            // pegar campos com operadores logicos diff de "=" e Clausulas "Or"
+            if(is_array($valor1)){
                 // para o psicopata não colocar 2 operadores
                 if(count($valor1)>1){
                     throw new \Exception("Err when definig the Where closure, more than one logical operator per field");
@@ -323,14 +369,15 @@ class DaviORM{
                 }
 
                 //pego a string gerada pelo o operador
-                $basic2 = $this->Op(array_key_first($valor1),["coluna"=>$campo1,"value"=>$valor1]);
+                $keyb = array_key_first($valor1);
+                $basic2 = $this->Op($keyb,["coluna"=>$campo1,"value"=>$valor1[$keyb]]);
                 return  $wheres[]=$basic2;
             }
 
-                $simple = $this->Op(settings:["coluna"=>$campo1,"value"=>$valor1]);
+            $simple = $this->Op(settings:["coluna"=>$campo1,"value"=>$valor1]);
 
-                return $wheres[]=$simple;
-            }
+            return $wheres[]=$simple;
+        }
 
         return " WHERE ".implode(" AND ", $wheres);
     }
@@ -384,7 +431,7 @@ class DaviORM{
     [ ] --> refazer o JOIN
     [x] --> construir retorno dinamico de operadores
     [x] --> Bind dinamico
-    [ ] --> construir logica de Or lv1
+    [x] --> construir logica de Or lv1
 
 
         ob->where([campo=>btw[1,2],Op=>[btw=>[],btw=>[]]])
