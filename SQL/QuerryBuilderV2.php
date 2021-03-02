@@ -10,18 +10,31 @@ class DaviORM{
     private $globalSql=[];
     
     public function __call( $clausure, $args){
+        //var_dump($args);
+        //var_dump($this->validClausure[0]);
         //verifica se um methodo pricipal foi iniciado
         if(empty($this->validClausure) )
-            return throw new \Exception("Main(Select,Delete,Upadate,Insert) method not declare");
+            return throw new \Exception("Main(Select,Subselect,Count,Delete,Upadate,Insert) method not declare");
         //verifica se a clausura declara foi iniciada, ou pertence ao grupo do metodo principal
-        if(!in_array($clausure,$this->validClausure) or $clausure !== "Table")
-            return throw new \Exception("The method not pertence this group clousule");
+        if(!in_array($clausure,$this->validClausure))
+            return throw new \Exception("The method not pertence this group clousule : {$this->validClausure[0]}" );
         
-        if(!$this->clausures["aux"][strtoupper($clausure)])
-            $this->clausures["aux"][strtoupper($clausure)] = $args[0];
-        if(count($args)>1)
-            $this->clausures["aux"] = $args;
+        //Where -> WHERE coloco tudo em maiusculo
+        $clausure = strtoupper($clausure);
+
         
+        //verifico se o aux já foi declarado, se n vamos criar
+        if(!in_array("aux",$this->clausures))
+            $this->clausures["aux"] =[];
+        
+         // var_dump($this->clausures);
+        //verifico se o closure já foi declarado anteriormente
+        $aux = $this->clausures["aux"];
+        if(in_array($clausure,$aux))
+            return throw new \Exception("Closure was aleredy declare");
+        //return var_dump($this->clausures);
+        //coloco os argumentos dentro do aux
+        $this->clausures["aux"] = count($args)>1? [$clausure=>$args] : [$clausure=>$args[0]];    
                         
         return $this;
     }
@@ -238,10 +251,10 @@ class DaviORM{
      */
 # ------ Querrys settings
     protected function Select(Array $campos = ["*"], Bool $distinct=false ){
-        if($this->clausures["main"])
+        if(in_array("main",$this->clausures))
             return throw new \Exception("Main querry has already been declared");
         //setando as clausuras que o select aceita para controle, na hora da declaração no call
-        $this->validClausure= ["Where","Join","Count",];
+        $this->validClausure= ["Where","JOIN"];
         
         //defino a clausura principal
         $this->clausures["main"] = "Select"; 
@@ -255,7 +268,7 @@ class DaviORM{
         else $localSql = "SELECT";
 
         //construo a querry, que está sendo montada no inicio do instaceamento
-        $localSql .= implode(',',$campos)." FROM ".$this->clausures["entity"];
+        $localSql .=" ".implode(',',$campos)." FROM ".$this->clausures["entity"];
 
         //coloco a querry em um array para ser buildada na hora da execução
         $this->globalSql[]=$localSql;
@@ -270,14 +283,18 @@ class DaviORM{
             return ;
 
         $joins ='';
-        
+      
     }
 
-    private function buildWhere(){
-        $aux = in_array("aux",$this->clausures)? $this->clausures["aux"] : ''; 
+    private function buildWhere($direction){
+        $aux = ''; 
+
+        if(in_array("$direction",$this->clausures))
+            $aux = $this->clausures[$direction];
         //<JOIN> --> WHERE 
-        if(!in_array("WHERE",$aux))
-            return ;
+        return var_dump($aux);
+        if(in_array("WHERE",$aux))
+            return "";
 
         $wheres =[];
         //vou varrer o array para pegar as específicações
@@ -391,9 +408,10 @@ class DaviORM{
     //SELECT * FROM <TABLE> <JOINs> <WHERE Or LogicOperators> <ORDER BY> <HAVING LogicOperators Count, Sum> <GROUP BY>
         $finalSql=[];
         //evita construir uma querry sem uma tabela definida
-        if(!in_array("entity",$this->clausures))
+        //var_dump($this->clausures);
+        if(in_array("entity",$this->clausures))
             throw new \Exception("Entity not define, plase use setEntity function");
-        $aux = in_array("aux",$this->clausures)? $this->clausures["aux"] : '';
+        $aux = in_array("aux",$this->clausures)? $this->clausures["aux"] : [];
 
 
         
@@ -419,13 +437,18 @@ class DaviORM{
         }
 
         //<JOIN> --> WHERE 
-        $finalSql[] = $this->buildWhere();
+        $finalSql[] = $this->buildWhere("aux");
 
         if(in_array("ORDERBY",$aux)){
 
         }
         
         
+    }
+
+    protected function retunrQuerry(){
+       
+       return var_dump($this->buildWhere("aux"));
     }
     /*
     [ ] --> refazer o JOIN
